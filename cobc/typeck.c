@@ -1362,6 +1362,95 @@ cb_build_register_xml_code (const char *name, const char *definition)
 	current_program->xml_code = tfield;
 }
 
+//kamal079 - xml parse syntax changes (start)
+static void
+cb_build_register_xml_event(const char* name, const char* definition)
+{
+	cb_tree tfield;
+	struct cb_field* field;
+
+	if (!definition) {
+		definition = cb_get_register_definition(name);
+		if (!definition) {
+			return;
+		}
+	}
+
+	/* take care of GLOBAL */
+	if (current_program->nested_level) {
+		return;
+	}
+
+	tfield = cb_build_field(cb_build_reference(name));
+	field = CB_FIELD(tfield);
+	field->usage = CB_USAGE_DISPLAY;
+	field->pic = CB_PICTURE(cb_build_picture("X(30)"));
+	cb_validate_field(field);
+	field->values = CB_LIST_INIT(cb_space);
+	field->flag_no_init = 1;
+	field->flag_is_global = 1;
+	current_program->xml_event = tfield;
+}
+
+static void
+cb_build_register_xml_text(const char* name, const char* definition)
+{
+	cb_tree tfield;
+	struct cb_field* field;
+
+	if (!definition) {
+		definition = cb_get_register_definition(name);
+		if (!definition) {
+			return;
+		}
+	}
+
+	/* take care of GLOBAL */
+	if (current_program->nested_level) {
+		return;
+	}
+
+	tfield = cb_build_field(cb_build_reference(name));
+	field = CB_FIELD(tfield);
+	field->pic = CB_PICTURE(cb_build_picture("X"));
+	cb_validate_field(field);
+	field->flag_no_init = 1;
+	field->flag_any_length = 1;
+	field->flag_is_global = 1;
+	current_program->xml_code = tfield;
+}
+
+static void
+cb_build_register_xml_information(const char* name, const char* definition)
+{
+	cb_tree tfield;
+	struct cb_field* field;
+
+	if (!definition) {
+		definition = cb_get_register_definition(name);
+		if (!definition) {
+			return;
+		}
+	}
+
+	/* take care of GLOBAL */
+	if (current_program->nested_level) {
+		return;
+	}
+
+	tfield = cb_build_field(cb_build_reference(name));
+	field = CB_FIELD(tfield);
+	field->usage = CB_USAGE_BINARY;
+	field->pic = CB_PICTURE(cb_build_picture("S9(9)"));
+	cb_validate_field(field);
+	field->values = CB_LIST_INIT(cb_zero);
+	field->flag_no_init = 1;
+	field->flag_any_length = 1;
+	field->flag_is_global = 1;
+	current_program->xml_code = tfield;
+}
+//kamal079 - xml parse syntax changes (end)
+
 /* TO-DO: Duplication! */
 static void
 cb_build_register_json_code (const char *name, const char *definition)
@@ -1434,6 +1523,22 @@ cb_build_single_register (const char *name, const char *definition)
 		cb_build_register_xml_code (name, definition);
 		return;
 	}
+	//kamal079 - XML-PARSE changes start
+	if (!strcasecmp(name, "XML-EVENT")) {
+		cb_build_register_xml_event(name, definition);
+		return;
+	}
+	if (!strcasecmp(name, "XML-TEXT")) {
+		cb_build_register_xml_text(name, definition);
+		return;
+	}
+	if (!strcasecmp(name, "XML-INFORMATION")) {
+		cb_build_register_xml_information(name, definition);
+		return;
+	}
+	//XML-INFORMATION
+
+	//kamal079 - XML-PARSE changes end
 
 	/* "normal" registers */
 	if (!strcasecmp (name, "TALLY")

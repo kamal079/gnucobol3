@@ -3002,14 +3002,14 @@ static struct register_struct	register_list[] = {
 	{"LIN", "PIC S9(4) USAGE COMP", CB_FEATURE_MUST_BE_ENABLED},	/* rare, only in combination with COL */
 	{"WHEN-COMPILED", "CONSTANT PICTURE X(16) USAGE DISPLAY", CB_FEATURE_ACTIVE},
 	{"XML-CODE", "GLOBAL PICTURE S9(9) USAGE BINARY VALUE 0", CB_FEATURE_ACTIVE},
-	/* {"XML-EVENT", "USAGE DISPLAY PICTURE X(30) VALUE SPACE", CB_FEATURE_ACTIVE}, */
-	/* {"XML-INFORMATION", "PICTURE S9(9) USAGE BINARY VALUE 0", CB_FEATURE_ACTIVE}, */
+	{"XML-EVENT", "USAGE DISPLAY PICTURE X(30) VALUE SPACE", CB_FEATURE_ACTIVE}, 
+	{"XML-INFORMATION", "PICTURE S9(9) USAGE BINARY VALUE 0", CB_FEATURE_ACTIVE}, 
 	/* {"XML-NAMESPACE", "PIC X ANY LENGTH", CB_FEATURE_ACTIVE}, /\* FIXME: currently not handled the "normal" register way *\/ */
 	/* {"XML-NAMESPACE-PREFIX", "PIC X ANY LENGTH", CB_FEATURE_ACTIVE}, /\* FIXME: currently not handled the "normal" register way *\/ */
 	/* {"XML-NNAMESPACE", "PIC N ANY LENGTH", CB_FEATURE_ACTIVE}, /\* FIXME: currently not handled the "normal" register way *\/ */
 	/* {"XML-NNAMESPACE-PREFIX", "PIC N ANY LENGTH", CB_FEATURE_ACTIVE}, /\* FIXME: currently not handled the "normal" register way *\/ */
 	/* {"XML-NTEXT", "PIC N ANY LENGTH", CB_FEATURE_ACTIVE}, /\* FIXME: currently not handled the "normal" register way *\/ */
-	/* {"XML-TEXT", "PIC X ANY LENGTH", CB_FEATURE_ACTIVE} /\* FIXME: currently not handled the "normal" register way *\/ */
+	{"XML-TEXT", "PIC X ANY LENGTH", CB_FEATURE_ACTIVE}, /* FIXME: currently not handled the "normal" register way *\/ */
 	{"JSON-CODE", "GLOBAL PICTURE S9(9) USAGE BINARY VALUE 0", CB_FEATURE_ACTIVE}
 	/* {"JSON-STATUS", "PIC X ANY LENGTH", CB_FEATURE_ACTIVE} /\* FIXME: currently not handled the "normal" register way *\/ */
 };

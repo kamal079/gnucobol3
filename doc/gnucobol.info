@@ -2378,6 +2378,7 @@ Compiler dialect configuration options:
   -fzero-length-literals=<support>	zero-length literals, e.g. '' and ""
   -fxml-generate=<support>	XML GENERATE statement
   -fxml-generate-extra-phrases=<support>	XML GENERATE's phrases other than COUNT IN
+  -fxml-parse=<support>	XML PARSE statement  
   -fjson-generate=<support>	JSON GENERATE statement
 	where <support> is one of the following:
 	'ok', 'warning', 'archaic', 'obsolete', 'skip', 'ignore', 'error', 'unconformable'
@@ -3339,6 +3340,9 @@ SORT-RETURN                     Yes             GLOBAL USAGE BINARY-LONG VALUE Z
 TALLY                           Yes             GLOBAL PICTURE 9(5) USAGE BINARY VALUE ZERO
 WHEN-COMPILED                   Yes             CONSTANT PICTURE X(16) USAGE DISPLAY
 XML-CODE                        Yes             GLOBAL PICTURE S9(9) USAGE BINARY VALUE 0
+XML-EVENT                       Yes             USAGE DISPLAY PICTURE X(30) VALUE SPACE
+XML-INFORMATION                 Yes             PICTURE S9(9) USAGE BINARY VALUE 0
+XML-TEXT                        Yes             PIC X ANY LENGTH
 JSON-CODE                       Yes             GLOBAL PICTURE S9(9) USAGE BINARY VALUE 0
 
 
@@ -4901,13 +4905,13 @@ Node: CBL_GC_WAITPID65062
 Node: Appendices65719
 Node: Appendix A66307
 Node: Appendix B82843
-Node: Appendix C126877
-Node: Appendix D132596
-Node: Appendix E134857
-Node: Appendix F138228
-Node: Appendix G145840
-Node: Appendix H147129
-Node: Appendix I163418
-Node: Index188538
+Node: Appendix C127113
+Node: Appendix D132832
+Node: Appendix E135093
+Node: Appendix F138464
+Node: Appendix G146076
+Node: Appendix H147365
+Node: Appendix I163654
+Node: Index188774
 
 End Tag Table

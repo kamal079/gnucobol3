@@ -146,6 +146,7 @@ unsigned int			cobc_force_literal = 0;
 unsigned int			cobc_cs_check = 0;
 unsigned int			cobc_allow_program_name = 0;
 unsigned int			cobc_in_xml_generate_body = 0;
+unsigned int			cobc_in_xml_parse_body = 0;
 unsigned int			cobc_in_json_generate_body = 0;
 
 /* Local variables */
@@ -928,6 +929,7 @@ clear_initial_values (void)
 	cobc_in_repository = 0;
 	cobc_force_literal = 0;
 	cobc_in_xml_generate_body = 0;
+	cobc_in_xml_parse_body = 0;
 	cobc_in_json_generate_body = 0;
 	non_const_word = 0;
 	suppress_data_exceptions = 0;
@@ -15267,8 +15269,9 @@ xml_parse_statement:
   XML PARSE
   {
 	begin_statement ("XML PARSE", TERM_XML);
-	/* TO-DO: Add xml-parse and xml-parse-extra-phrases config options. */
-	CB_PENDING (_("XML PARSE"));
+	/*kamal079 - xml parse changes */
+	cb_verify (cb_xml_parse, _("XML PARSE"));
+	cobc_in_xml_parse_body = 1;
 	cobc_cs_check = CB_CS_XML_PARSE;
   }
   xml_parse_body
@@ -15282,6 +15285,7 @@ xml_parse_body:
   _validating_with
   PROCESSING PROCEDURE _is perform_procedure
   {
+	cobc_in_xml_parse_body = 0;
 	cobc_cs_check = 0;
   }
   _xml_exception_phrases
