@@ -32,7 +32,7 @@ END-INFO-DIR-ENTRY
 
 File: gnucobol.info,  Node: Top,  Next: Getting started,  Up: (dir)
 
-Welcome to the GnuCOBOL 3.0-dst manual.
+Welcome to the GnuCOBOL 3.0-dst-build-4 manual.
 
 * Menu:
 
@@ -2378,7 +2378,7 @@ Compiler dialect configuration options:
   -fzero-length-literals=<support>	zero-length literals, e.g. '' and ""
   -fxml-generate=<support>	XML GENERATE statement
   -fxml-generate-extra-phrases=<support>	XML GENERATE's phrases other than COUNT IN
-  -fxml-parse=<support>	XML PARSE statement  
+  -fxml-parse=<support>  XML PARSE statement
   -fjson-generate=<support>	JSON GENERATE statement
 	where <support> is one of the following:
 	'ok', 'warning', 'archaic', 'obsolete', 'skip', 'ignore', 'error', 'unconformable'
@@ -3836,6 +3836,7 @@ record-delim-with-fixed-recs:		ok
 missing-statement:			warning
 zero-length-literals:			ok
 xml-generate:				ok
+xml-parse:				ok
 xml-generate-extra-phrases:		ok
 json-generate:				ok
 
@@ -4850,68 +4851,68 @@ Index
 
 Tag Table:
 Node: Top1118
-Node: Getting started4604
-Node: Hello world!4782
-Node: Compile6210
-Node: Compiler options6568
-Node: Help options7310
-Ref: Help options-Footnote-18854
-Node: Build target8898
-Ref: Build target-Footnote-111418
-Node: Source format11471
-Ref: Source format-Footnote-112258
-Node: Warning options12332
-Node: Configuration options13786
-Node: Listing options16538
-Node: Debug switches21241
-Node: Miscellaneous22306
-Node: Multiple sources23465
-Node: Static linking24105
-Node: Dynamic linking25571
-Ref: Dynamic linking-Footnote-127163
-Ref: Dynamic linking-Footnote-227224
-Node: Building library27285
-Node: Using library27668
-Node: C interface28239
-Node: Main C program28613
-Node: Static C to COBOL29692
-Node: Dynamic C to COBOL31399
-Node: Static COBOL to C32922
-Node: Dynamic COBOL to C34358
-Node: Interface functions for C34801
-Node: Customize36228
-Node: Customizing compiler36452
-Node: Customizing library37020
-Node: Optimize37778
-Node: Optimize options38081
-Node: Optimize call38601
-Node: Optimize binary38981
-Node: Debug39557
-Node: Debug options39713
-Node: Extensions40042
-Node: SELECT40634
-Node: Indexed41370
-Node: Extended ACCEPT41550
-Node: ACCEPT special45725
-Node: Extended DISPLAY48251
-Node: FUNCTION CONTENT-LENGTH50767
-Node: FUNCTION CONTENT-OF51436
-Node: System Routines52305
-Node: CBL_GC_GETOPT52840
-Node: CBL_GC_HOSTED57010
-Node: CBL_GC_NANOSLEEP61535
-Node: CBL_GC_FORK62059
-Node: CBL_GC_WAITPID65062
-Node: Appendices65719
-Node: Appendix A66307
-Node: Appendix B82843
-Node: Appendix C127113
-Node: Appendix D132832
-Node: Appendix E135093
-Node: Appendix F138464
-Node: Appendix G146076
-Node: Appendix H147365
-Node: Appendix I163654
-Node: Index188774
+Node: Getting started4612
+Node: Hello world!4790
+Node: Compile6218
+Node: Compiler options6576
+Node: Help options7318
+Ref: Help options-Footnote-18862
+Node: Build target8906
+Ref: Build target-Footnote-111426
+Node: Source format11479
+Ref: Source format-Footnote-112266
+Node: Warning options12340
+Node: Configuration options13794
+Node: Listing options16546
+Node: Debug switches21249
+Node: Miscellaneous22314
+Node: Multiple sources23473
+Node: Static linking24113
+Node: Dynamic linking25579
+Ref: Dynamic linking-Footnote-127171
+Ref: Dynamic linking-Footnote-227232
+Node: Building library27293
+Node: Using library27676
+Node: C interface28247
+Node: Main C program28621
+Node: Static C to COBOL29700
+Node: Dynamic C to COBOL31407
+Node: Static COBOL to C32930
+Node: Dynamic COBOL to C34366
+Node: Interface functions for C34809
+Node: Customize36236
+Node: Customizing compiler36460
+Node: Customizing library37028
+Node: Optimize37786
+Node: Optimize options38089
+Node: Optimize call38609
+Node: Optimize binary38989
+Node: Debug39565
+Node: Debug options39721
+Node: Extensions40050
+Node: SELECT40642
+Node: Indexed41378
+Node: Extended ACCEPT41558
+Node: ACCEPT special45733
+Node: Extended DISPLAY48259
+Node: FUNCTION CONTENT-LENGTH50775
+Node: FUNCTION CONTENT-OF51444
+Node: System Routines52313
+Node: CBL_GC_GETOPT52848
+Node: CBL_GC_HOSTED57018
+Node: CBL_GC_NANOSLEEP61543
+Node: CBL_GC_FORK62067
+Node: CBL_GC_WAITPID65070
+Node: Appendices65727
+Node: Appendix A66315
+Node: Appendix B82896
+Node: Appendix C127166
+Node: Appendix D132885
+Node: Appendix E135146
+Node: Appendix F138517
+Node: Appendix G146146
+Node: Appendix H147435
+Node: Appendix I163724
+Node: Index188844
 
 End Tag Table

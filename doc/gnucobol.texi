@@ -51,7 +51,7 @@ approved by the Free Software Foundation.
 @titlepage
 @title GnuCOBOL Manual
 @subtitle for GnuCOBOL @value{VERSION}
-@author Keisuke Nishida, Roger While, Brian Tiffin, Simon Sobisch
+@author Keisuke Nishida, Roger While, Brian Tiffin, Simon Sobisch, Kamal Ramakrishnan
 
 Edition @value{EDITION} @*
 Updated for GnuCOBOL @value{VERSION} @*

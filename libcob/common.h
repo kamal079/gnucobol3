@@ -1181,7 +1181,7 @@ typedef struct __cob_field {
 	size_t			size;		/* Field size */
 	unsigned char		*data;		/* Pointer to field data */
 	const cob_field_attr	*attr;		/* Pointer to attribute */
-	int			occurs_count; /*occurs count*/
+	int			occurs_count; /*kamal079 - occurs count*/
 } cob_field;
 
 #if	0	/* RXWRXW - Constant field */
@@ -1634,6 +1634,12 @@ typedef struct __cob_ml_tree {
 	struct __cob_ml_tree	*sibling;
 } cob_ml_tree;
 
+/* kamal079 - parser structure*/
+typedef struct __cob_ml_parse_node {
+	const char			*xmlNodeType;
+	char				*xmlNodeText;
+	struct __cob_ml_parse_node *next;
+} cob_ml_parse_node;
 /* Global variable structure */
 
 typedef struct __cob_global {
@@ -2556,8 +2562,8 @@ COB_EXPIMP void	cob_xml_generate	(cob_field *, cob_ml_tree *,
 					 cob_field *);
 COB_EXPIMP void cob_json_generate	(cob_field *, cob_ml_tree *,
 					 cob_field *);
-
-
+COB_EXPIMP void cob_ml_parse(cob_field*, cob_ml_parse_node**);
+COB_EXPIMP void cob_ml_parse_content(cob_ml_parse_node*, cob_field *, cob_field *);
 /****************************/
 /* Functions in intrinsic.c */
 /****************************/

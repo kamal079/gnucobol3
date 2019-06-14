@@ -37,6 +37,7 @@
 #define CB_PREFIX_LABEL		"l_"	/* Label */
 #define CB_PREFIX_ML_ATTR	"ma_"	/* JSON/XML GENERATE attribute */
 #define CB_PREFIX_ML_TREE	"mt_"	/* JSON/XML GENERATE tree */
+#define CB_PREFIX_ML_PARSE	"mp_"	/* XML PARSE tree*/
 #define CB_PREFIX_PIC		"p_"	/* PICTURE string */
 #define CB_PREFIX_SEQUENCE	"s_"	/* Collating sequence */
 #define CB_PREFIX_STRING	"st_"	/* String */
@@ -113,7 +114,8 @@ enum cb_tag {
 	CB_TAG_REPORT_LINE,	/* 40 Report line description */
 	CB_TAG_ML_SUPPRESS,	/* 41 JSON/XML GENERATE SUPPRESS clause */
 	CB_TAG_ML_TREE,	/* 42 JSON/XML GENERATE output tree */
-	CB_TAG_ML_SUPPRESS_CHECKS	/* 43 JSON/XML GENERATE SUPPRESS checks */
+	CB_TAG_ML_SUPPRESS_CHECKS,	/* 43 JSON/XML GENERATE SUPPRESS checks */
+	CB_TAG_ML_PARSE /* 44 XML PARSE OUTPUT tree */
 	/* When adding a new entry, please remember to add it to
 	   cobc_enum_explain as well. */
 };
@@ -468,7 +470,8 @@ enum cb_perform_type {
 	CB_PERFORM_ONCE,
 	CB_PERFORM_TIMES,
 	CB_PERFORM_UNTIL,
-	CB_PERFORM_FOREVER
+	CB_PERFORM_FOREVER,
+	CB_PERFORM_ML_PARSE
 };
 
 /* Index type */
@@ -1472,6 +1475,17 @@ struct cb_ml_generate_tree {
 #define CB_ML_TREE(x)		(CB_TREE_CAST (CB_TAG_ML_TREE, struct cb_ml_generate_tree, x))
 #define CB_ML_TREE_P(x)	(CB_TREE_TAG (x) == CB_TAG_ML_TREE)
 
+/* kamal079 - XML Parse changes - start*/
+struct cb_ml_parse_tree {
+	struct cb_tree_common	common;
+	struct cb_field *xml_event;
+	struct cb_field *xml_text;
+	int					id;
+};
+#define CB_ML_PARSE(x)		(CB_TREE_CAST (CB_TAG_ML_PARSE, struct cb_ml_parse_tree, x))
+#define CB_ML_PARSE_P(x)	(CB_TREE_TAG (x) == CB_TAG_ML_PARSE)
+/* kamal079 - XML Parse changes - end*/
+
 /* Program */
 
 struct nested_list {
@@ -1549,6 +1563,7 @@ struct cb_program {
 	struct cb_label		*all_procedure;		/* DEBUGGING */
 	struct cb_call_xref	call_xref;		/* CALL Xref list */
 	struct cb_ml_generate_tree	*ml_trees;	/* XML GENERATE trees */
+	struct cb_ml_parse_tree *ml_parse; /* kamal079 - XML PARSE */
 	const char		*extfh;		/* CALLFH for this program */
 
 	int			last_source_line;	/* Line of (implicit) END PROGRAM/FUNCTION */
@@ -1892,7 +1907,7 @@ extern cb_tree		cb_build_ml_tree (struct cb_field *, const int,
 					   const int, cb_tree, cb_tree,
 					   cb_tree);
 extern cb_tree		cb_build_ml_suppress_checks (struct cb_ml_generate_tree *);
-
+extern cb_tree		cb_build_ml_parse(cb_tree);
 
 /* parser.y */
 extern cb_tree		cobc_printer_node;
@@ -2194,6 +2209,7 @@ extern void		cb_emit_xml_generate (cb_tree, cb_tree, cb_tree,
 					      cb_tree);
 extern void		cb_emit_json_generate (cb_tree, cb_tree, cb_tree,
 					       cb_tree, cb_tree);
+extern void		cb_emit_xml_parse(cb_tree, cb_tree);
 
 #ifdef	COB_TREE_DEBUG
 extern cb_tree		cobc_tree_cast_check (const cb_tree, const char *,

@@ -24,7 +24,7 @@
 AC_PREREQ([2.64])
 
 AC_INIT([GnuCOBOL],
-	[3.0-dst],
+	[3.0-dst-build-4],
 	[bug-gnucobol@gnu.org],
 	[gnucobol],
 	[https://www.gnu.org/software/gnucobol/])

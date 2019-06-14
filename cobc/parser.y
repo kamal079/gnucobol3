@@ -15280,29 +15280,32 @@ xml_parse_statement:
 
 xml_parse_body:
   identifier
+  /*
   _with_encoding
   _returning_national
   _validating_with
+  */
   PROCESSING PROCEDURE _is perform_procedure
   {
 	cobc_in_xml_parse_body = 0;
 	cobc_cs_check = 0;
   }
   _xml_exception_phrases
+  {
+	cb_emit_xml_parse($1,$5);
+  }
 ;
-
+//kamal079 - additional options for XML PARSE not supported
+/*
 _with_encoding:
-/* empty */
 | _with ENCODING simple_value
 ;
 
 _returning_national:
-/* empty */
 | RETURNING NATIONAL
 ;
 
 _validating_with:
-/* empty */
 | VALIDATING _with schema_file_or_record_name
 ;
 
@@ -15318,6 +15321,7 @@ schema_file_or_record_name:
 	}
   }
 ;
+*/
 
 /* Status handlers */
 

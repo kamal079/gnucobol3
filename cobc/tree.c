@@ -6377,3 +6377,12 @@ cb_build_ml_suppress_checks (struct cb_ml_generate_tree *tree)
 	check->tree = tree;
 	return CB_TREE (check);
 }
+
+cb_tree
+cb_build_ml_parse(cb_tree record)
+{
+	struct cb_ml_parse_tree *tree;
+	tree = make_tree(CB_TAG_ML_PARSE, CB_CATEGORY_UNKNOWN,sizeof(struct cb_ml_parse_tree));
+	tree->id = cb_ml_parse_id++;
+	return CB_TREE(tree);
+}

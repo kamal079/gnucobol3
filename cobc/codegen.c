@@ -155,6 +155,7 @@ static struct label_list	*label_cache = NULL;
 static struct ml_tree_list	*ml_tree_cache = NULL;
 
 
+
 static FILE			*output_target = NULL;
 static FILE			*cb_local_file = NULL;
 static const char		*excp_current_program_id = NULL;
@@ -1946,21 +1947,8 @@ output_nonlocal_base_cache (void)
 /* OCCURS COUNT XML*/
 static void
 output_occurs_count(cb_tree x)
-{
-	struct cb_field* f;
-	switch (CB_TREE_TAG(x)) {
-	case CB_TAG_FIELD:
-		f = CB_FIELD(x);
-		if (f->flag_occurs) {
-			output("%d", f->occurs_count);
-		}
-		else {
-			output("%d", 0);
-		}
-		break;
-	default:
-		output("%d", 0);
-	}
+{		
+	output("%d", 0);
 }
 
 /* Fields */
@@ -2220,9 +2208,7 @@ output_nonlocal_field_cache (void)
 			output_storage ("\n/* PROGRAM-ID : %s */\n",
 					prev_prog);
 		}
-
-		output ("static cob_field %s%d\t= ", CB_PREFIX_FIELD,
-			field->f->id);
+		output ("static cob_field %s%d\t= ", CB_PREFIX_FIELD, field->f->id);
 		if (!field->f->flag_local) {
 			output_field (field->x);
 		} else {
@@ -2238,7 +2224,6 @@ output_nonlocal_field_cache (void)
 			output (";\t/* %s */\n", field->f->name);
 		}
 	}
-
 	output_storage ("\n/* End of fields */\n\n");
 }
 
@@ -3355,6 +3340,13 @@ output_ml_trees_definitions (struct cb_ml_generate_tree *tree)
 	}
 }
 
+static void
+output_ml_parse_definitions(struct cb_ml_parse_tree *node)
+{
+	output_local("static cob_ml_parse_node\t*%s%d;\n", CB_PREFIX_ML_PARSE, node->id);
+}
+
+
 /* Parameter */
 
 static void
@@ -3798,7 +3790,9 @@ output_param (cb_tree x, int id)
 	case CB_TAG_ML_TREE:
 		output ("&%s%d", CB_PREFIX_ML_TREE, CB_ML_TREE (x)->id);
 		break;
-
+	case CB_TAG_ML_PARSE:
+		output("&%s%d", CB_PREFIX_ML_PARSE, CB_ML_PARSE(x)->id);
+		break;
 	case CB_TAG_FUNCALL:
 		output_funcall (x);
 		break;
@@ -6678,6 +6672,16 @@ output_perform_until (struct cb_perform *p, cb_tree l)
 	output_indent ("}");
 }
 
+/*kamal079 - parse perform*/
+static void
+output_perform_ml_parse(struct cb_ml_parse_tree* tree) {
+	if (tree == NULL) return;
+	output("\tif (%s%d == NULL) break; \n", CB_PREFIX_ML_PARSE, tree->id);
+	output("\tcob_ml_parse_content(%s%d,&%s%d,&%s%d);\n", CB_PREFIX_ML_PARSE, tree->id,CB_PREFIX_FIELD,tree->xml_text->id, CB_PREFIX_FIELD, tree->xml_event->id);
+	output("\t%s%d = %s%d->next;\n", CB_PREFIX_ML_PARSE, tree->id, CB_PREFIX_ML_PARSE, tree->id);
+}
+/*kamal079 - parse  perform*/
+
 static void
 output_perform (struct cb_perform *p)
 {
@@ -6692,6 +6696,14 @@ output_perform (struct cb_perform *p)
 		break;
 	case CB_PERFORM_ONCE:
 		output_perform_once (p);
+		break;
+	case CB_PERFORM_ML_PARSE:
+		output_prefix();
+		output("for (;;)\n");
+		output_indent("{");
+		output_perform_ml_parse(CB_ML_PARSE(p->data));
+		output_perform_once(p);
+		output_indent("}");
 		break;
 	case CB_PERFORM_TIMES:
 		output_prefix ();
@@ -6915,7 +6927,7 @@ output_ml_tree_suppress_cond (struct cb_ml_generate_tree *tree)
 	//kamal079- support OCCURS in XML
 	if (tree->value) {
 		struct cb_field* f = CB_FIELD(tree->value);
-		if (f->flag_occurs) {
+		if (f->occurs_count > 0) {
 			output("f_%d.occurs_count=%d", f->id, f->occurs_count);
 			output(";\n");
 		}
@@ -10169,6 +10181,12 @@ output_internal_function (struct cb_program *prog, cb_tree parameter_list)
 		output_ml_trees_definitions (prog->ml_trees);
 	}
 
+	//kamal079 - ml parse
+	if (prog->ml_parse) {
+		output_local("\n/* XML PARSE trees */\n");
+		output_ml_parse_definitions(prog->ml_parse);
+	}
+
 #if	0	/* RXWRXW - Any */
 	/* ANY LENGTH items */
 	anyseen = 0;
@@ -12132,3 +12150,4 @@ codegen (struct cb_program *prog, const int subsequent_call)
 	source_cache = NULL;
 	source_id = 1;
 }
+

@@ -1417,7 +1417,7 @@ cb_build_register_xml_text(const char* name, const char* definition)
 	field->flag_no_init = 1;
 	field->flag_any_length = 1;
 	field->flag_is_global = 1;
-	current_program->xml_code = tfield;
+	current_program->xml_text = tfield;
 }
 
 static void
@@ -1447,7 +1447,7 @@ cb_build_register_xml_information(const char* name, const char* definition)
 	field->flag_no_init = 1;
 	field->flag_any_length = 1;
 	field->flag_is_global = 1;
-	current_program->xml_code = tfield;
+	current_program->xml_information = tfield;
 }
 //kamal079 - xml parse syntax changes (end)
 
@@ -2167,6 +2167,8 @@ cb_build_identifier (cb_tree x, const int subchk)
 								 cb_int (p->occurs_max),
 								 CB_BUILD_STRING0 (name),
 								cb_int0);
+							//kamal079 - increment for flag occurs
+							f->occurs_count++;
 							r->check = cb_list_add (r->check, e1);
 						}
 					}
@@ -9784,13 +9786,25 @@ cb_build_move_literal (cb_tree src, cb_tree dst)
 	f = CB_FIELD_PTR (dst);
 	cat = CB_TREE_CATEGORY (dst);
 
-	if (f->flag_occurs) {
-		f->occurs_count++;
-	}
-
 	if (f->flag_any_length) {
+		f->size = l->size + 1; //kamal079 - fix the lenth
 		return CB_BUILD_FUNCALL_2 ("cob_move", src, dst);
 	}
+
+	/*kamal079 - loop through parent to find occurs*/
+	/*struct cb_field* node = f;
+	int flag_occurs = 0;
+	do {
+		if (node->flag_occurs) {
+			flag_occurs = 1;
+			break;
+		}
+		node = node->parent;
+	} while (node);
+
+	if (flag_occurs) {
+		f->occurs_count++;
+	}*/
 
 	if (l->all) {
 		if (cat == CB_CATEGORY_NUMERIC
@@ -12501,4 +12515,39 @@ cb_emit_json_generate (cb_tree out, cb_tree from, cb_tree count,
 	
 	cb_emit (cb_build_ml_suppress_checks (tree));
 	cb_emit (CB_BUILD_FUNCALL_3 ("cob_json_generate", out, CB_TREE (tree), count));
+}
+
+/*kamal079 - xml parse changes*/
+static int
+syntax_check_ml_parse_input_rec(cb_tree result)
+{
+	int     	error = 0;
+	if (cb_validate_one(result)) {
+		return 1;
+	}
+	return error;
+}
+
+static int syntax_check_ml_parse(cb_tree result, cb_tree proc) {
+	int error = 0;
+	error |= syntax_check_ml_parse_input_rec(result);
+	return error;
+}
+
+void
+cb_emit_xml_parse(cb_tree result, cb_tree proc) {
+	struct cb_ml_parse_tree *tree;
+	if (syntax_check_ml_parse(result, proc)) {
+		return;
+	}
+	tree = CB_ML_PARSE(cb_build_ml_parse(result));
+	current_program->ml_parse = tree;
+	tree->xml_text = CB_FIELD(current_program->xml_text);
+	tree->xml_event = CB_FIELD(current_program->xml_event);
+	cb_emit(CB_BUILD_FUNCALL_2("cob_ml_parse", result, CB_TREE(tree)));
+	cb_tree perform_stmt = cb_build_perform(CB_PERFORM_ML_PARSE);
+	struct cb_perform *perform = CB_PERFORM(perform_stmt);
+	perform->body = proc;
+	perform->data = CB_TREE(tree);
+	cb_emit(CB_TREE(perform));	
 }

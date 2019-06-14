@@ -43,6 +43,9 @@
 #if defined (HAVE_LIBXML_XMLWRITER_H) && HAVE_LIBXML_XMLWRITER_H
 #include <libxml/xmlwriter.h>
 #endif
+#if defined (HAVE_LIBXML_PARSER_H) && HAVE_LIBXML_PARSER_H
+#include <libxml/parser.h>
+#endif
 #if defined (HAVE_LIBXML_URI_H) && HAVE_LIBXML_URI_H
 #include <libxml/uri.h>
 #endif
@@ -63,10 +66,23 @@ enum xml_code_status {
 	XML_INTERNAL_ERROR = 600
 };
 
+enum xml_event_type {
+	START_OF_DOCUMENT =1,
+	END_OF_DOCUMENT = 2,
+	START_OF_ELEMENT= 3,
+	ATTRIBUTE_NAME = 4,
+	ATTRIBUTE_CHARACTERS = 5,
+	END_OF_ELEMENT = 6,
+	CONTENT_CHARACTERS = 7
+};
+
 enum json_code_status {
 	JSON_OUT_FIELD_TOO_SMALL = 1,
 	JSON_INTERNAL_ERROR = 500
 };
+
+/*kamal079 - parse xml*/
+cob_ml_parse_node *head = NULL, *ptr = NULL;
 
 
 static cob_global		*cobglobptr;
@@ -283,9 +299,9 @@ get_xml_name (const cob_field * const f)
 	} ONCE_COB
 
 static int
-generate_xml_from_tree (xmlTextWriterPtr, cob_ml_tree *, xmlChar *, xmlChar *,
-			unsigned int *);
+generate_xml_from_tree (xmlTextWriterPtr, cob_ml_tree *, xmlChar *, xmlChar *,int, unsigned int *);
 
+static void recursive_child_level(cob_ml_tree *, int *, int * , int *); //kamal079
 static xmlChar *
 get_name_with_hex_prefix (const cob_field * const name)
 {
@@ -456,12 +472,11 @@ generate_content (xmlTextWriterPtr writer, cob_ml_tree *tree, unsigned int *coun
 
 static int
 generate_normal_element (xmlTextWriterPtr writer, cob_ml_tree *tree,
-			 xmlChar *x_ns, xmlChar *x_ns_prefix, unsigned int *count)
+			 xmlChar *x_ns, xmlChar *x_ns_prefix, int iter, unsigned int *count)
 {
 	int		status;
 	xmlChar		*x_name;
 	cob_ml_tree	*child;
-
 	/* Start element */
 	x_name = get_xml_name (tree->name);
 	IF_NEG_RETURN_ELSE_COUNT (xmlTextWriterStartElementNS (writer, x_ns_prefix,
@@ -481,10 +496,37 @@ generate_normal_element (xmlTextWriterPtr writer, cob_ml_tree *tree,
 			  Note we only have a namespace attribute on the
 			  outermost element.
 			*/
-			status = generate_xml_from_tree (writer, child, NULL,
-							 x_ns_prefix, count);
-			if (status < 0) {
-				return status;
+			int loopCount = 0;
+			int totalLevels = 0;
+			int prevlevel = 0;
+			recursive_child_level(child, &totalLevels, &prevlevel, &loopCount);
+			printf("%s,level -- %d,loop count -- %d, iter -- %d ;\n", get_xml_name(child->name), totalLevels, loopCount, iter);
+			//leaf node
+			if (totalLevels == 0 && child->content) {
+				int iterCnt;
+				if (iter > 0) iterCnt = child->content->occurs_count / iter;
+				else if (child->content->occurs_count) iterCnt = child->content->occurs_count;
+				else iterCnt = 1;
+				for (int i = 0; i < iterCnt; i++) {
+					generate_normal_element(writer, child, NULL, x_ns_prefix, 0, count);
+					child->content->data += child->content->size;
+				}
+			}
+			else {
+				if (totalLevels > 0 && loopCount > 0) {
+					for (int i = 0; i < loopCount; i++) {
+						status = generate_xml_from_tree(writer, child, NULL, x_ns_prefix, loopCount, count);
+						if (status < 0) {
+							return status;
+						}
+					}
+				}
+				else {
+					status = generate_xml_from_tree(writer, child, NULL, x_ns_prefix,iter, count);
+					if (status < 0) {
+						return status;
+					}
+				}
 			}
 		}
 	} else if (tree->content) {
@@ -500,9 +542,24 @@ generate_normal_element (xmlTextWriterPtr writer, cob_ml_tree *tree,
 	return 0;
 }
 
+static void recursive_child_level(cob_ml_tree *tree, int *level, int *prevLevel, int *occurs_count) {
+
+	for (cob_ml_tree* child = tree->children; child; child=child->sibling) {
+		if (child->content) {
+			if (child->content->occurs_count > *occurs_count && *prevLevel == *level)
+				*occurs_count = child->content->occurs_count;
+		}
+		*prevLevel = *level;
+		if(child->children) {
+			(*level)++;
+			recursive_child_level(child, level, prevLevel, occurs_count);
+		}
+	}
+}
+
 static int
 generate_element (xmlTextWriterPtr writer, cob_ml_tree *tree,
-		  xmlChar *x_ns, xmlChar *x_ns_prefix, unsigned int *count)
+		  xmlChar *x_ns, xmlChar *x_ns_prefix, int iter, unsigned int *count)
 {
 	/* Check for invalid characters. */
 	if (tree->content
@@ -513,32 +570,19 @@ generate_element (xmlTextWriterPtr writer, cob_ml_tree *tree,
 					     count);
 	} else {
 		return generate_normal_element (writer, tree, x_ns,
-						x_ns_prefix, count);
+						x_ns_prefix, iter, count);
 	}
 }
 
 static int
 generate_xml_from_tree (xmlTextWriterPtr writer, cob_ml_tree *tree,
-			xmlChar *ns, xmlChar *ns_prefix, unsigned int *count)
+			xmlChar *ns, xmlChar *ns_prefix, int iter, unsigned int *count)
 {
 	if (tree->is_suppressed) {
 		return 0;
 	}
-	int status = 0;
 	if (tree->name) {
-		if (tree->content && tree->content->occurs_count > 0) {
-			for (int i = 0; i < tree->content->occurs_count; i++) {
-				if (!is_all_spaces(tree->content)) {
-				  status = generate_element(writer, tree, ns, ns_prefix, count);
-				  if (status < 0)
-					return status;
-				}
-				tree->content->data += tree->content->size;
-			}
-		}
-		else {
-			return generate_element(writer, tree, ns, ns_prefix, count);
-		}
+		return generate_element(writer, tree, ns, ns_prefix, iter, count);
 	} 
 	return generate_content (writer, tree, count);
 }
@@ -787,8 +831,7 @@ cob_xml_generate (cob_field *out, cob_ml_tree *tree, cob_field *count,
 		}
 	}
 
-        status = generate_xml_from_tree (writer, tree, x_ns, x_ns_prefix,
-				     &chars_written);
+        status = generate_xml_from_tree (writer, tree, x_ns, x_ns_prefix,0,&chars_written);
 	if (status < 0) {
 		set_xml_exception (XML_INTERNAL_ERROR);
 		goto end;
@@ -940,3 +983,124 @@ cob_exit_mlio (void)
 	xmlCleanupParser ();
 #endif
 }
+
+#if WITH_XML2
+int start;
+static void start_document(void* ctx ATTRIBUTE_UNUSED)
+{
+	head = malloc(sizeof(cob_ml_parse_node));
+	if (head == NULL) {
+		return;
+	}
+	head->xmlNodeType = "START-OF-DOCUMENT";
+	head->xmlNodeText = NULL;
+	ptr = head;
+}
+static void end_document(void* ctx ATTRIBUTE_UNUSED)
+{
+	if (head == NULL) {
+		return;
+	}
+	head->next = malloc(sizeof(cob_ml_parse_node));
+	head->next->xmlNodeType = "END-OF-DOCUMENT";
+	head->next->xmlNodeText = NULL;
+	//fprintf(stdout, "SAX.endDocument()\n");
+}
+
+static void start_element(void* ctx, const xmlChar* name, const xmlChar** attrs)
+{
+	start = 1;
+	if (head == NULL) {
+		return;
+	}
+	head->next = malloc(sizeof(cob_ml_parse_node));
+	head->next->xmlNodeType = "START-OF-ELEMENT";
+	head->next->xmlNodeText = calloc(1, strlen((char*)name));
+	strncpy(head->next->xmlNodeText, (char*)name, strlen((char*)name));
+	head = head->next;
+
+	while (NULL != attrs && NULL != attrs[0]) {
+		if (head == NULL) {
+			return;
+		}
+		head->next = malloc(sizeof(cob_ml_parse_node));
+		head->next->xmlNodeType = "ATTRIBUTE-NAME";
+		head->next->xmlNodeText = calloc(1, strlen((char*)attrs[0]));
+		strncpy(head->next->xmlNodeText, (char*)attrs[0], strlen((char*)attrs[0]));
+		head = head->next;
+
+		if (head == NULL) {
+			return;
+		}
+		head->next = malloc(sizeof(cob_ml_parse_node));
+		head->next->xmlNodeType = "ATTRIBUTE-CHARACTERS";
+		head->next->xmlNodeText = calloc(1, strlen((char*)attrs[1]));
+		strncpy(head->next->xmlNodeText, (char*)attrs[1], strlen((char*)attrs[1]));
+		head = head->next;
+		attrs = &attrs[2];
+	}
+
+}
+
+static void end_element(void* ctx ATTRIBUTE_UNUSED, const xmlChar* name)
+{
+	if (head == NULL) {
+		return;
+	}
+	head->next = malloc(sizeof(cob_ml_parse_node));
+	head->next->xmlNodeType = "END-OF-ELEMENT";
+	head->next->xmlNodeText = calloc(1, strlen((char*)name));
+	strncpy(head->next->xmlNodeText, (char*)name, strlen((char*)name));
+	head = head->next;
+	//fprintf(stdout, "SAX.endElement(%s)\n", (char*)name);
+	start = 0;
+}
+
+static void content_characters(void* ctx ATTRIBUTE_UNUSED, const xmlChar* content, int len)
+{
+	if (!start) return;
+	if (head == NULL) {
+		return;
+	}
+	head->next = malloc(sizeof(cob_ml_parse_node));
+	head->next->xmlNodeType = "CONTENT-CHARACTERS";
+	head->next->xmlNodeText = calloc(1, len);
+	strncpy(head->next->xmlNodeText, (char*)content, len);
+	head = head->next;
+	//fprintf(stdout, "SAX.content(%s)\n", content);
+}
+static void cdata_content(void* ctx ATTRIBUTE_UNUSED, const xmlChar* content, int len)
+{
+	if (head == NULL) {
+		return;
+	}
+	head->next = malloc(sizeof(cob_ml_parse_node));
+	head->next->xmlNodeType = "CONTENT-CHARACTERS";
+	head->next->xmlNodeText = calloc(1, len);
+	strncpy(head->next->xmlNodeText, (char*)content, len);
+	head = head->next;
+}
+void cob_ml_parse(cob_field* result, cob_ml_parse_node **node)
+{
+	xmlSAXHandlerPtr handler = calloc(1, sizeof(xmlSAXHandler));
+	handler->startElement = start_element;
+	handler->startDocument = start_document;
+	handler->endDocument = end_document;
+	handler->endElement = end_element;
+	handler->cdataBlock = cdata_content;
+	handler->characters = content_characters;
+	xmlSAXUserParseMemory(handler, NULL, (const char *)result->data, strlen((const char*)result->data));
+	*node = ptr;
+}
+
+void cob_ml_parse_content(cob_ml_parse_node *node, cob_field *xml_text, cob_field *xml_event) {
+	if (node->xmlNodeText == NULL) {
+		xml_text->size = 0;
+	} else {
+		xml_text->size = strlen(node->xmlNodeText);
+		xml_text->data = (unsigned char *)node->xmlNodeText;
+	}
+	xml_event->size = strlen(node->xmlNodeType);
+	xml_event->data = (unsigned char*)node->xmlNodeType;
+}
+#endif
